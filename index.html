@@ -57,18 +57,20 @@ take over from this point onwards to predict the exact location. In essense, com
 <br><br>
 <!-- Introduction -->
 <h3>Introduction</h3>
-Estimating geographic location from an image is an exciting problem because people have achieved high test accuracy only on highly tailored datasets. For example in [1] they have removed all the images from the dataset that are not indicative of the local. In other words, they have removed indoor scenes and photos with people as the main focus. In [2] they try to estimate the location of a photo picked from a photo burst. They use HMM on the timestamps of the neighboring images and try to predict the location. Being able to GPS tag any arbitrary image presents exciting possibilities. To start with, there are a number of untagged images on smartphones. Imagine you want to find out where a very old random image was taken, that doesnt present much information. For example this: 
-<div style="text-align: center;">
+Estimating geographic location from an image is an exciting problem because people have achieved high test accuracy only on highly tailored datasets. For example in [1] they have removed all the images from the dataset that are not indicative of the location. In other words, they have removed indoor scenes and photos with people as the main focus. In [2] they try to estimate the location of a photo picked from a photo burst. They use HMM's on the timestamps of the neighboring images and try to predict the location. <br>
+Being able to GPS tag any arbitrary image presents exciting possibilities. To start with, there are a number of untagged images on smartphones. Imagine you want to find out where a very old random image was taken. For example I found this image on my phone: 
+<div style="text-align: left;">
 <img style="height: 400px;" alt="" src="img/example.JPG">
+<img style="height: 300px; width: 500px;" alt="" src="img/caption.png">
 </div>
-From looking at the image or even that same album it is sometimes hard to tell where the image was clicked, this is especially true if the image was from a trip long back. As such times applications like these maybe super useful.
+From looking at the image or even the images from that same trip it is hard to tell where the image was clicked, this is especially true if the image was from a trip long back. As such times applications like these become super useful.
 
 <br><br>
 <!-- Approach -->
 <h3>Approach</h3>
-For this task we picked 3000 images from the Yahoo Flickr creative commons, YFCC100M dataset. The dataset was downloaded from the <a href="http://www.multimediaeval.org/mediaeval2015/"> Mediaeval Placing task</a> website. All the photos in the dataset are idetified by an MD5 hash and hash to flickr photo identifier mapping is provided. Using this mapping we<a = href "https://www.flickr.com/services/api/flickr.photos.getInfo.html"> queried</a> the <a href = "https://www.flickr.com/services/api/">flickr API</a> to get the metadata about the image. The metadata we were interested in was the timestamp, country and latitude and longitude of an image. Now for a query image we run it through the image retrieval pipeline described below which returned the 5 topmost similar images. Then we post-processed the results to keep only those images which were expected to lie
-close to the query image geographically. Remember, the aim of the application is to narrow down the search space for the query image from the vast set of any point on the surfae of the earth to only a city or a country or as close as we can get. So the most natural choices were the timestamp and the country metadata that we had.
-The YFCC100M dataset contains collections of photos by a number of tourists while travelling a particular city. The photos are organised in sessions. A session is a series of photos taken by a toursit while travelling within a city in a 24-hour time period. So assuming our sample database contains a good number of images from one or more these sessions, it is only natural that we use timestamps of images to filter the results. So from the results we keep only those which are taken withing a day of the query image. It is ofcourse possible that our dataset contains images that match the timestamp criteria but do not lie within the same country as query, so we compare the countries of the results and query and keep only those images which match the country. But for this approach to work the dataset should contain a lot of images from one or more sessions. 
+For this task we picked 3000 images from the Yahoo Flickr creative commons, YFCC100M dataset. The dataset was downloaded from the <a href="http://www.multimediaeval.org/mediaeval2015/"> Mediaeval Placing task</a> website. All the photos in the dataset are identified by an MD5 hash and hash to flickr photo identifier mapping is provided. Using this mapping we<a = href "https://www.flickr.com/services/api/flickr.photos.getInfo.html"> queried</a> the <a href = "https://www.flickr.com/services/api/">flickr API</a> to get the metadata about the image. The metadata we were interested in was the timestamp, country and latitude and longitude of an image. Now for a query image we run it through the image retrieval pipeline described below which returned the 5 topmost similar images. Then we post-processed the results to keep only those images which were expected to lie
+close to the query image geographically. Remember, the aim of the application is to narrow down the search space for the query image from the vast set containing any point on the surfae of the earth to only a city or a country or as close as we can get. So the most natural choices were the timestamp and the country metadata that we had.
+The YFCC100M dataset contains collections of photos by a number of tourists while travelling a particular city. The photos are organised in sessions. A session is a series of photos taken by a toursit while travelling within a city in a 24-hour time period. So assuming our sample database contains a good number of images from one or more these sessions, it is only natural that we use timestamps of images to filter the results. So from the results we keep only those which are taken withing a day of the query image. It is ofcourse possible that our dataset contains images that match the timestamp criteria but do not lie within the same country as query, so we compare the countries of the results and query and keep only those images which match the country. But for this approach to work the dataset must contain a lot of images from one or more sessions. 
 <br><br>
 <b>The image retrieval pipeline:</b>
 <br>
@@ -90,12 +92,12 @@ All of the features above individually gave varying results with SIFT outperform
 The ultimate measure of performance that we are estimating here is how close are the returned images to the query image. To see the kind of results we get we ran all images through the system, and measured the <a href="http://www.movable-type.co.uk/scripts/latlong.html">haversine distance</a> between the coordinates of the query image and the coordinates of the top five results. Then we averaged these distances. The smaller the distance the better.
 <!-- Results -->
 <h3>Experiments and results</h3>
-We started with a subset of 980 images from YFCC100M dataset. Then for each of the training images we measured the average distance of the returned images from the query image in SIFT, GIST and color-histogram spaces. The results for SIFT were 1000.2 km, 1500.7 km and 1800 km respectively. But these figures aren't particularly indicative of effectiveness of the corresponding features. For this to be more effective the dataset should contain a good number of images from each session. But we were limited by constraints of computational resources. We expanded our dataset to contain as many as 3000 images from YFCC100M, but as predicted didn't see a significant jump in performance.
+We started with a subset of 980 images from YFCC100M dataset. Then for each of the training images we measured the average distance of the returned images from the query image in SIFT, GIST and color-histogram spaces. The results for SIFT, GIST and color-histogram were 7191 km, 2657 km and 2560 km respectively. But these figures aren't particularly indicative of effectiveness of the corresponding features. For this to be more effective the dataset must contain a good number of images from each session. But we were limited by availibility of computational resources. We expanded our dataset to contain as many as 3000 images from YFCC100M, but as expected didn't see a significant jump in performance.
 <br><br>
 
 <!-- Main Results Figure --> 
 <div style="text-align: center;">
-<img style="height: 300px;" alt="" src="img/results.png">
+<img style="height: 300px;" alt="" src="img/capture.JPG">
 </div>
 <br><br>
 
@@ -105,9 +107,9 @@ Below we show results for individual features SIFT, GIST and color histogram in 
 <br><br>
 <!-- Main Results Figure --> 
 <div style="text-align: center;">
-<img style="height: 300px; width: 450px;" alt="" src="img/img_sift.png">
-<img style="height: 300px; width: 450px;" alt="" src="img/img_gist.png">
-<img style="height: 300px; width: 450px" alt="" src="img/img_chist.png">
+<img style="height: 350px; width: 470px;" alt="" src="img/img_sift.png">
+<img style="height: 350px; width: 470px;" alt="" src="img/img_gist.png">
+<img style="height: 350px; width: 470px" alt="" src="img/img_chist.png">
 </div>
 <br><br>
 
